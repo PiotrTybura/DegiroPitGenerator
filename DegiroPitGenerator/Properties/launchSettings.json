@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "DegiroPitGenerator": {
+      "commandName": "Project",
+      "commandLineArgs": "2020"
+    }
+  }
+}
