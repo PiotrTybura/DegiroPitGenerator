@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Extensions;
 using Integrations.Degiro.Models;
@@ -17,10 +18,12 @@ namespace Integrations.Degiro.Adapters
     public class DividendAdapter : IDividendAdapter
     {
         private readonly DegiroConfiguration _configuration;
+        private readonly CultureInfo _datesCultureInfo;
 
         public DividendAdapter(DegiroConfiguration configuration)
         {
             _configuration = configuration;
+            _datesCultureInfo = CultureInfo.GetCultureInfo(configuration.Domain.ReportsIsoLanguageCode);
         }
 
         public IEnumerable<Dividend> Adapt(List<CsvCashOperation> degiroCashOperations)
@@ -37,7 +40,7 @@ namespace Integrations.Degiro.Adapters
                 {
                     Amount = dividendRow.ChangeAmount.Value,
                     Currency = ParseCurrency(dividendRow.ChangeCurrency),
-                    Date = DateTime.Parse(dividendRow.Date),
+                    Date = DateTime.Parse(dividendRow.Date, _datesCultureInfo),
                     //There are no stock names in cashOperation reports, so reference must base only on Isin
                     FinancialInstrumentReference = dividendRow.Isin,
                     FinancialInstrumentCommonName = dividendRow.Product,

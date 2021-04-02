@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Extensions;
 using Integrations.Degiro.Models;
@@ -18,15 +19,17 @@ namespace Integrations.Degiro.Adapters
     public class TransactionAdapter : ITransactionAdapter
     {
         private readonly DegiroConfiguration _configuration;
+        private readonly CultureInfo _datesCultureInfo;
 
         public TransactionAdapter(DegiroConfiguration configuration)
         {
             _configuration = configuration;
+            _datesCultureInfo = CultureInfo.GetCultureInfo(configuration.Domain.ReportsIsoLanguageCode);
         }
 
         public IEnumerable<Transaction> Adapt(List<CsvTransaction> degiroTransactions)
         {
-            foreach (var degiroTransaction in degiroTransactions.OrderBy(_ => DateTime.Parse(_.Date)).ThenBy(_ => TimeSpan.Parse(_.Time)).GroupBy(_ => _.TransactionId))
+            foreach (var degiroTransaction in degiroTransactions.OrderBy(_ => DateTime.Parse(_.Date, _datesCultureInfo)).ThenBy(_ => TimeSpan.Parse(_.Time)).GroupBy(_ => _.TransactionId))
             {
                 var feeSum = degiroTransaction.Sum(_ => Math.Abs(_.FeeAmount ?? 0));
 
@@ -36,7 +39,7 @@ namespace Integrations.Degiro.Adapters
                     Id = degiroTransaction.SelectSingle(_ => _.TransactionId),
                     FinancialInstrumentCommonName = degiroTransaction.SelectSingle(_ => _.InstrumentName),
                     FinancialInstrumentReference = degiroTransaction.SelectSingle(_ => $"{_.Isin}.{_.StockExchangeName}"),
-                    Date = Convert.ToDateTime(degiroTransaction.SelectSingle(_ => _.Date)),
+                    Date = Convert.ToDateTime(degiroTransaction.SelectSingle(_ => _.Date), _datesCultureInfo),
                     TransactionType = degiroTransaction
                         .SelectSingle(_ => _.Quantity > 0 ? TransactionType.BUY : TransactionType.SELL),
                     Quantity = degiroTransaction.Sum(_ => Math.Abs(_.Quantity.Value)),

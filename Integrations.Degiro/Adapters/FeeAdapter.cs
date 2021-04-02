@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Integrations.Degiro.Models;
 using Integrations.Degiro.Models.Configuration;
@@ -15,11 +16,13 @@ namespace Integrations.Degiro.Adapters
 
     public class FeeAdapter : IFeeAdapter
     {
-        private readonly DegiroConfiguration _configuration;
+        private readonly Translations _translations;
+        private readonly CultureInfo _datesCultureInfo;
 
         public FeeAdapter(DegiroConfiguration configuration)
         {
-            _configuration = configuration;
+            _translations = configuration.Domain.Translations;
+            _datesCultureInfo = CultureInfo.GetCultureInfo(configuration.Domain.ReportsIsoLanguageCode);
         }
 
         public IEnumerable<Fee> Adapt(List<CsvCashOperation> degiroCashOperations)
@@ -27,13 +30,13 @@ namespace Integrations.Degiro.Adapters
             var fees = new List<Fee>();
 
             //A yearly fee paid for every foreign stock exchange where there was at least one transaction in the year
-            fees.AddRange(GetFeesByType(degiroCashOperations, _configuration.Domain.Translations.ForeignExchangeFee, FeeType.ForeignStockConnection));
+            fees.AddRange(GetFeesByType(degiroCashOperations, _translations.ForeignExchangeFee, FeeType.ForeignStockConnection));
 
             //Fees for stocks bought using a loan
-            fees.AddRange(GetFeesByType(degiroCashOperations, _configuration.Domain.Translations.Interest, FeeType.Interest));
+            fees.AddRange(GetFeesByType(degiroCashOperations, _translations.Interest, FeeType.Interest));
 
             //Fees for short-transactions
-            fees.AddRange(GetFeesByType(degiroCashOperations, _configuration.Domain.Translations.ShortInterest, FeeType.ShortInterest));
+            fees.AddRange(GetFeesByType(degiroCashOperations, _translations.ShortInterest, FeeType.ShortInterest));
 
             return fees;
         }
@@ -47,7 +50,7 @@ namespace Integrations.Degiro.Adapters
                 {
                     Amount = Math.Abs(fee.ChangeAmount.Value),
                     Currency = Enum.Parse<Currency>(fee.ChangeCurrency),
-                    Date = DateTime.Parse(fee.Date),
+                    Date = DateTime.Parse(fee.Date, _datesCultureInfo),
                     FeeType = type
                 };
         }
