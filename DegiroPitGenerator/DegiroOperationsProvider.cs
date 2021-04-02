@@ -18,9 +18,9 @@ namespace DegiroPitGenerator
     internal class DegiroOperationsProvider : IDegiroOperationsProvider
     {
         private readonly DegiroConfiguration _configuration;
-        private ITransactionAdapter _transactionAdapter;
-        private IDividendAdapter _dividendAdapter;
-        private IFeeAdapter _feeAdapter;
+        private readonly ITransactionAdapter _transactionAdapter;
+        private readonly IDividendAdapter _dividendAdapter;
+        private readonly IFeeAdapter _feeAdapter;
 
         internal DegiroOperationsProvider()
         {
@@ -62,14 +62,14 @@ namespace DegiroPitGenerator
             };
         }
 
-        private T GetDegiroConfiguration<T>()
+        private static T GetDegiroConfiguration<T>()
         {
             return new ConfigurationBuilder()
                 .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
                 .AddJsonFile("appsettings.json")
                 .AddUserSecrets<Program>()
                 .Build()
-                .GetSection(nameof(T))
+                .GetSection(typeof(T).Name)
                 .Get<T>();
         }
     }
