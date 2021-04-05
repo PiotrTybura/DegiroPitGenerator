@@ -49,10 +49,10 @@ namespace PolishPitGenerator
                 GenerationDateTime = DateTime.Now,
                 Pit38Report = new Pit38Report
                 {
-                    C22 = financialInstrumentBalances.Sum(fib => fib.AllUnitsClosedInYear.Sum(au => au.CloseEvent.UnitPrice * au.CloseEvent.UnitPitExchangeRate)).Round2(),
-                    C23 = financialInstrumentBalances.Sum(fib => fib.AllUnitsClosedInYear.Sum(au => au.OpenEvent.UnitPrice * au.OpenEvent.UnitPitExchangeRate)).Round2()
-                        + financialInstrumentBalances.Sum(fib => fib.AllUnitsClosedInYear.Sum(au => au.CloseEvent.Fee * au.CloseEvent.FeePitExchangeRate)).Round2()
-                        + financialInstrumentBalances.Sum(fib => fib.AllUnitsClosedInYear.Sum(au => au.OpenEvent.Fee * au.OpenEvent.FeePitExchangeRate)).Round2()
+                    C22 = financialInstrumentBalances.Sum(fib => fib.AllUnitsClosedInYear.Select(au => au.GetIncomeEvent()).Sum(ie => ie.UnitPrice * ie.UnitPitExchangeRate)).Round2(),
+                    C23 = financialInstrumentBalances.Sum(fib => fib.AllUnitsClosedInYear.Select(au =>  au.GetCostEvent()).Sum(ce => ce.UnitPrice * ce.UnitPitExchangeRate)).Round2()
+                        + financialInstrumentBalances.Sum(fib => fib.AllUnitsClosedInYear.Select(au => au.GetIncomeEvent()).Sum(ie => ie.Fee * ie.FeePitExchangeRate)).Round2()
+                        + financialInstrumentBalances.Sum(fib => fib.AllUnitsClosedInYear.Select(au => au.GetCostEvent()).Sum(ce => ce.Fee * ce.FeePitExchangeRate)).Round2()
                         //All fees are taken as the "cost of income"
                         + fees.Sum(f => f.Amount * f.PitExchangeRate).Round2(),
                     G45 = dividends.Sum(d => d.PolishTaxAmount * d.PitExchangeRate).Round2(),
@@ -61,8 +61,10 @@ namespace PolishPitGenerator
                     PitZGs = financialInstrumentBalances.GroupBy(fib => fib.StockExchangeCountry).Select(g => new PitZG
                     {
                         Country = g.Key,
-                        C3_32 = g.Sum(fib => fib.AllUnitsClosedInYear.Sum(au => au.CloseEvent.UnitPrice * au.CloseEvent.UnitPitExchangeRate)).Round2()
-                            - g.Sum(fib => fib.AllUnitsClosedInYear.Sum(au => au.OpenEvent.UnitPrice * au.OpenEvent.UnitPitExchangeRate)).Round2(),
+                        C3_32 = g.Sum(fib => fib.AllUnitsClosedInYear.Select(au => au.GetIncomeEvent()).Sum(ie => ie.UnitPrice * ie.UnitPitExchangeRate)).Round2()
+                            - g.Sum(fib => fib.AllUnitsClosedInYear.Select(au => au.GetCostEvent()).Sum(ce => ce.UnitPrice * ce.UnitPitExchangeRate)).Round2()
+                            - g.Sum(fib => fib.AllUnitsClosedInYear.Select(au => au.GetIncomeEvent()).Sum(ie => ie.Fee * ie.FeePitExchangeRate)).Round2()
+                            - g.Sum(fib => fib.AllUnitsClosedInYear.Select(au => au.GetCostEvent()).Sum(ce => ce.Fee * ce.FeePitExchangeRate)).Round2(),
                         //Assumging there was no Tax taken from the transaction profit
                         C3_33 = 0m
                     })
@@ -91,17 +93,17 @@ namespace PolishPitGenerator
                         }),
                     TransactionsSum =  new TransactionSummary
                     {
-                        Income = financialInstrumentBalances.Sum(fib => fib.AllUnitsClosedInYear.Sum(au => au.CloseEvent.UnitPrice * au.CloseEvent.UnitPitExchangeRate)).Round2()
-                            - financialInstrumentBalances.Sum(fib => fib.AllUnitsClosedInYear.Sum(au => au.OpenEvent.UnitPrice * au.OpenEvent.UnitPitExchangeRate)).Round2(),
-                        FeesSum = financialInstrumentBalances.Sum(fib => fib.AllUnitsClosedInYear.Sum(au => au.CloseEvent.Fee * au.CloseEvent.FeePitExchangeRate)).Round2()
-                            + financialInstrumentBalances.Sum(fib => fib.AllUnitsClosedInYear.Sum(au => au.OpenEvent.Fee * au.OpenEvent.FeePitExchangeRate)).Round2(),
+                        Profit = financialInstrumentBalances.Sum(fib => fib.AllUnitsClosedInYear.Select(au => au.GetIncomeEvent()).Sum(ie => ie.UnitPrice * ie.UnitPitExchangeRate)).Round2()
+                            - financialInstrumentBalances.Sum(fib => fib.AllUnitsClosedInYear.Select(au => au.GetCostEvent()).Sum(ce => ce.UnitPrice * ce.UnitPitExchangeRate)).Round2(),
+                        FeesSum = financialInstrumentBalances.Sum(fib => fib.AllUnitsClosedInYear.Select(au => au.GetIncomeEvent()).Sum(ie => ie.Fee * ie.FeePitExchangeRate)).Round2()
+                            + financialInstrumentBalances.Sum(fib => fib.AllUnitsClosedInYear.Select(au => au.GetCostEvent()).Sum(ce => ce.Fee * ce.FeePitExchangeRate)).Round2(),
                     },
-                    TransactionsIncomeByFinancialInstrument = financialInstrumentBalances.Select(fib => new InstrumentTransactionSummary
+                    TransactionsProfitByFinancialInstrument = financialInstrumentBalances.Select(fib => new InstrumentTransactionSummary
                     {
-                        Income = fib.AllUnitsClosedInYear.Sum(au => au.CloseEvent.UnitPrice * au.CloseEvent.UnitPitExchangeRate).Round2()
-                            - fib.AllUnitsClosedInYear.Sum(au => au.OpenEvent.UnitPrice * au.OpenEvent.UnitPitExchangeRate).Round2(),
-                        FeesSum = fib.AllUnitsClosedInYear.Sum(au => au.CloseEvent.Fee * au.CloseEvent.FeePitExchangeRate).Round2()
-                            + fib.AllUnitsClosedInYear.Sum(au => au.OpenEvent.Fee * au.OpenEvent.FeePitExchangeRate).Round2(),
+                        Profit = fib.AllUnitsClosedInYear.Select(au => au.GetIncomeEvent()).Sum(ie => ie.UnitPrice * ie.UnitPitExchangeRate).Round2()
+                            - fib.AllUnitsClosedInYear.Select(au => au.GetCostEvent()).Sum(ce => ce.UnitPrice * ce.UnitPitExchangeRate).Round2(),
+                        FeesSum = fib.AllUnitsClosedInYear.Select(au => au.GetIncomeEvent()).Sum(ie => ie.Fee * ie.FeePitExchangeRate).Round2()
+                            + fib.AllUnitsClosedInYear.Select(au => au.GetCostEvent()).Sum(ce => ce.Fee * ce.FeePitExchangeRate).Round2(),
                         FinancialInstrumentCommonName = fib.FinancialInstrumentCommonName,
                         FinancialInstrumentReference = fib.FinancialInstrumentReference
                     })

@@ -2,7 +2,7 @@
 {
     public class TransactionSummary
     {
-        public decimal Income { get; set; }
+        public decimal Profit { get; set; }
         public decimal FeesSum { get; set; }
     }
 }

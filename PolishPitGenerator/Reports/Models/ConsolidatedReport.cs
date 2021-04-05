@@ -12,6 +12,6 @@ namespace PolishPitGenerator.Reports.Models
         public DividendSummary DividendsSum { get; internal set; }
         public IEnumerable<DividendSummary> DividendsSumByFinancialInstrument { get; internal set; }
         public TransactionSummary TransactionsSum { get; internal set; }
-        public object TransactionsIncomeByFinancialInstrument { get; internal set; }
+        public object TransactionsProfitByFinancialInstrument { get; internal set; }
     }
 }

@@ -50,7 +50,8 @@ namespace PolishPitGenerator.Transactions
 
                     financialInstrumentBalance.TransactionUnits.AddRange(Enumerable.Range(0, transaction.Quantity).Select(_ => new TransactionUnit
                     {
-                        OpenEvent = GetTransactionEvent(transaction)
+                        OpenEvent = GetTransactionEvent(transaction),
+                        TransactionType = transaction.TransactionType
                     }));
                 }
                 else
