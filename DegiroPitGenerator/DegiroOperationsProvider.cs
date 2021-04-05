@@ -11,11 +11,7 @@ using Models.Operations;
 
 namespace DegiroPitGenerator
 {
-    internal interface IDegiroOperationsProvider
-    {
-    }
-
-    internal class DegiroOperationsProvider : IDegiroOperationsProvider
+    internal class DegiroOperationsProvider
     {
         private readonly DegiroConfiguration _configuration;
         private readonly ITransactionAdapter _transactionAdapter;
@@ -24,7 +20,7 @@ namespace DegiroPitGenerator
 
         internal DegiroOperationsProvider()
         {
-            _configuration = GetDegiroConfiguration<DegiroConfiguration>();
+            _configuration = Configuration.GetSection<DegiroConfiguration>();
             _transactionAdapter = new TransactionAdapter(_configuration);
             _dividendAdapter = new DividendAdapter(_configuration);
             _feeAdapter = new FeeAdapter(_configuration);
@@ -34,7 +30,7 @@ namespace DegiroPitGenerator
         {
             var degiroIntegration = await new Integrations.Degiro.IntegrationFactory(_configuration).Create();
 
-            var localCsvConfiguration = GetDegiroConfiguration<DegiroCsvOverride>();
+            var localCsvConfiguration = Configuration.GetSection<DegiroCsvOverride>();
 
             ICsv<CsvTransaction> transactionCsv;
             ICsv<CsvCashOperation> cashOperationCsv;
@@ -60,17 +56,6 @@ namespace DegiroPitGenerator
                 YearDividends = _dividendAdapter.Adapt(degiroCashOperations),
                 YearFees = _feeAdapter.Adapt(degiroCashOperations)
             };
-        }
-
-        private static T GetDegiroConfiguration<T>()
-        {
-            return new ConfigurationBuilder()
-                .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
-                .AddJsonFile("appsettings.json")
-                .AddUserSecrets<Program>()
-                .Build()
-                .GetSection(typeof(T).Name)
-                .Get<T>();
         }
     }
 }

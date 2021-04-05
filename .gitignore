@@ -5,6 +5,9 @@ project.lock.json
 *.pyc
 nupkg/
 
+# Domain reports
+*.csv
+
 # Visual Studio Code
 .vscode
 

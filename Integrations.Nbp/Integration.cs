@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using Integrations.Nbp.Models;
 using Models;
 using Models.ExchangeRate;
 using RestSharp;
@@ -18,12 +19,15 @@ namespace Integrations.Nbp
 
     public class Integration : IIntegration
     {
-        private const string Url = "https://www.nbp.pl/kursy/Archiwum/archiwum_tab_a_{0}.csv";
         private readonly RestClient _client;
+        private readonly CultureInfo _cultureInfo;
+        private readonly string _exchangeRatesUrl;
 
-        public Integration()
+        public Integration(NbpConfiguration configuration)
         {
             _client = new RestClient();
+            _cultureInfo = CultureInfo.GetCultureInfo(configuration.ReportsIsoLanguageCode);
+            _exchangeRatesUrl = configuration.Requests.ExchangeRatesUrl;
 
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
         }
@@ -36,7 +40,7 @@ namespace Integrations.Nbp
             //are fetched from 2013
             for(int year=2013; year <= DateTime.Now.Year; year++)
             {
-                var csv = DownloadCsvFromUrl(string.Format(Url, year));
+                var csv = DownloadCsvFromUrl(string.Format(_exchangeRatesUrl, year));
                 exchangeRates.AddRange(DeserializeCsvToRates(csv));
             }
 
@@ -77,7 +81,7 @@ namespace Integrations.Nbp
                         BaseCurrency = Enum.Parse<Currency>(currencies[i].Name),
                         //The code was prepared for Degiro accounts denominated in EUR
                         CounterCurrency = Currency.PLN,
-                        Rate = decimal.Parse(cells[i]) / currencies[i].Denominator
+                        Rate = decimal.Parse(cells[i], _cultureInfo) / currencies[i].Denominator
                     };
                 }
             }

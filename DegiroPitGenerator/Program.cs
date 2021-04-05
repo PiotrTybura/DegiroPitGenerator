@@ -13,11 +13,11 @@ namespace DegiroPitGenerator
             var pitYear = int.Parse(args[0]);
 
             var degiroOperationsProivder = new DegiroOperationsProvider();
+            var nbpExchangeRatesProvider = new NbpExchangeRatesProvider();
 
             var yearOperations = await degiroOperationsProivder.GetYearOperations(pitYear);
 
-            var nbpIntegration = await Integrations.Nbp.IntegrationFactory.Create();
-            var exchangeRates = nbpIntegration.GetExchangeRates();
+            var exchangeRates = await nbpExchangeRatesProvider.GetExchangeRates();
 
             var pitProvider = new PitProvider(exchangeRates);
             var pitReport = pitProvider.GetReport(yearOperations);
