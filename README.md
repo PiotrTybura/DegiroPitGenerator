@@ -29,6 +29,6 @@ Degiro does not provide PIT-8C (the Polish tax Report) so if you are a Polish ci
 ## More info
 Can be found on Wiki
 
-## Special Thanks to:
+## Special Thanks to
 - My wife Etka
 - Friendly Exchange Circle
