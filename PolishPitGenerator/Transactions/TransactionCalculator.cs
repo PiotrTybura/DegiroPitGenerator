@@ -45,23 +45,17 @@ namespace PolishPitGenerator.Transactions
                 }
 
                 if (IfOpenTransaction(financialInstrumentBalance, transaction))
-                {
-                    financialInstrumentBalance.UnitBalance += transaction.Quantity;
-
-                    financialInstrumentBalance.TransactionUnits.AddRange(Enumerable.Range(0, transaction.Quantity).Select(_ => new TransactionUnit
+                    financialInstrumentBalance.TransactionUnits.AddRange(Enumerable.Range(0, Math.Abs(transaction.Quantity)).Select(_ => new TransactionUnit
                     {
                         OpenEvent = GetTransactionEvent(transaction),
                         TransactionType = transaction.TransactionType
                     }));
-                }
                 else
-                {
-                    financialInstrumentBalance.UnitBalance -= transaction.Quantity;
-
                     financialInstrumentBalance.TransactionUnits
-                        .Where(_ => _.CloseEvent == default).Take(transaction.Quantity)
+                        .Where(_ => _.CloseEvent == default).Take(Math.Abs(transaction.Quantity))
                         .ToList().ForEach(_ => _.CloseEvent = GetTransactionEvent(transaction));
-                }
+
+                financialInstrumentBalance.UnitBalance += transaction.Quantity;
             }
 
             foreach (var financialInstrumentBalance in financialInstrumentBalances)
@@ -83,10 +77,10 @@ namespace PolishPitGenerator.Transactions
             return new TransactionEvent
             {
                 Date = transaction.Date,
-                UnitPrice = transaction.TransactionPrice / transaction.Quantity,
+                UnitPrice = transaction.TransactionPrice / Math.Abs(transaction.Quantity),
                 UnitCurrency = transaction.TransactionCurrency,
                 UnitPitExchangeRate = _exchangeRateSolver.GetNbpExchangeRate(transaction.TransactionCurrency, transaction.Date),
-                Fee = transaction.Fee / transaction.Quantity,
+                Fee = transaction.Fee / Math.Abs(transaction.Quantity),
                 FeeCurrency = transaction.FeeCurrency,
                 FeePitExchangeRate = transaction.FeeCurrency.HasValue ?
                     _exchangeRateSolver.GetNbpExchangeRate(transaction.FeeCurrency.Value, transaction.Date) : default

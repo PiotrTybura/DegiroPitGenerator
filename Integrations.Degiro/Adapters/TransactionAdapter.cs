@@ -42,7 +42,7 @@ namespace Integrations.Degiro.Adapters
                     Date = Convert.ToDateTime(degiroTransaction.SelectSingle(_ => _.Date), _datesCultureInfo),
                     TransactionType = degiroTransaction
                         .SelectSingle(_ => _.Quantity > 0 ? TransactionType.BUY : TransactionType.SELL),
-                    Quantity = degiroTransaction.Sum(_ => Math.Abs(_.Quantity.Value)),
+                    Quantity = degiroTransaction.Sum(_ => _.Quantity.Value),
                     TransactionPrice = Math.Abs(degiroTransaction.Sum(_ => _.LocalValue.Value)),
                     TransactionCurrency = degiroTransaction.SelectSingle(_ => Enum.Parse<Currency>(_.LocalCurrency)),
                     Fee = feeSum,
