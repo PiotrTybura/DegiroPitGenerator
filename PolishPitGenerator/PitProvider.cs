@@ -49,22 +49,17 @@ namespace PolishPitGenerator
                 GenerationDateTime = DateTime.Now,
                 Pit38Report = new Pit38Report
                 {
-                    C22 = financialInstrumentBalances.Sum(fib => fib.AllUnitsClosedInYear.Select(au => au.GetIncomeEvent()).Sum(ie => ie.UnitPrice * ie.UnitPitExchangeRate)).Round2(),
-                    C23 = financialInstrumentBalances.Sum(fib => fib.AllUnitsClosedInYear.Select(au =>  au.GetCostEvent()).Sum(ce => ce.UnitPrice * ce.UnitPitExchangeRate)).Round2()
-                        + financialInstrumentBalances.Sum(fib => fib.AllUnitsClosedInYear.Select(au => au.GetIncomeEvent()).Sum(ie => ie.Fee * ie.FeePitExchangeRate)).Round2()
-                        + financialInstrumentBalances.Sum(fib => fib.AllUnitsClosedInYear.Select(au => au.GetCostEvent()).Sum(ce => ce.Fee * ce.FeePitExchangeRate)).Round2()
-                        //All fees are taken as the "cost of income"
-                        + fees.Sum(f => f.Amount * f.PitExchangeRate).Round2(),
+                    C22 = financialInstrumentBalances.Sum(fib => fib.AllUnitsClosedInYear.Sum(au => au.GetIncome())),
+                    C23 = financialInstrumentBalances.Sum(fib => fib.AllUnitsClosedInYear.Sum(au =>  au.GetTotalCost())),
                     G45 = dividends.Sum(d => d.PolishTaxAmount * d.PitExchangeRate).Round2(),
                     G46 = dividends.Sum(d => d.PaidTaxAmount * d.PitExchangeRate).Round2(),
                     G47 = dividends.Sum(d => d.PitTaxAmount * d.PitExchangeRate).Round2(),
-                    PitZGs = financialInstrumentBalances.GroupBy(fib => fib.StockExchangeCountry).Select(g => new PitZG
+                    PitZGs = financialInstrumentBalances.GroupBy(fib => fib.StockExchangeCountry)
+                        .Where(fib => fib.Key != Country.Poland)
+                        .Select(g => new PitZG
                     {
                         Country = g.Key,
-                        C3_32 = g.Sum(fib => fib.AllUnitsClosedInYear.Select(au => au.GetIncomeEvent()).Sum(ie => ie.UnitPrice * ie.UnitPitExchangeRate)).Round2()
-                            - g.Sum(fib => fib.AllUnitsClosedInYear.Select(au => au.GetCostEvent()).Sum(ce => ce.UnitPrice * ce.UnitPitExchangeRate)).Round2()
-                            - g.Sum(fib => fib.AllUnitsClosedInYear.Select(au => au.GetIncomeEvent()).Sum(ie => ie.Fee * ie.FeePitExchangeRate)).Round2()
-                            - g.Sum(fib => fib.AllUnitsClosedInYear.Select(au => au.GetCostEvent()).Sum(ce => ce.Fee * ce.FeePitExchangeRate)).Round2(),
+                        C3_32 = g.Sum(fib => fib.AllUnitsClosedInYear.Sum(au => au.GetProfit())).Round2(),
                         //Assumging there was no Tax taken from the transaction profit
                         C3_33 = 0m
                     })
@@ -93,17 +88,15 @@ namespace PolishPitGenerator
                         }),
                     TransactionsSum =  new TransactionSummary
                     {
-                        Profit = financialInstrumentBalances.Sum(fib => fib.AllUnitsClosedInYear.Select(au => au.GetIncomeEvent()).Sum(ie => ie.UnitPrice * ie.UnitPitExchangeRate)).Round2()
-                            - financialInstrumentBalances.Sum(fib => fib.AllUnitsClosedInYear.Select(au => au.GetCostEvent()).Sum(ce => ce.UnitPrice * ce.UnitPitExchangeRate)).Round2(),
-                        FeesSum = financialInstrumentBalances.Sum(fib => fib.AllUnitsClosedInYear.Select(au => au.GetIncomeEvent()).Sum(ie => ie.Fee * ie.FeePitExchangeRate)).Round2()
-                            + financialInstrumentBalances.Sum(fib => fib.AllUnitsClosedInYear.Select(au => au.GetCostEvent()).Sum(ce => ce.Fee * ce.FeePitExchangeRate)).Round2(),
+                        TransactionProfitExcludingFees = financialInstrumentBalances.Sum(fib => fib.AllUnitsClosedInYear.Sum(au => au.GetProfit() + au.GetFeesCost())),
+                        TransactionProfitIncludingFees = financialInstrumentBalances.Sum(fib => fib.AllUnitsClosedInYear.Sum(au => au.GetProfit())),
+                        FeesSum = financialInstrumentBalances.Sum(fib => fib.AllUnitsClosedInYear.Sum(au => au.GetFeesCost()))
                     },
                     TransactionsProfitByFinancialInstrument = financialInstrumentBalances.Select(fib => new InstrumentTransactionSummary
                     {
-                        Profit = fib.AllUnitsClosedInYear.Select(au => au.GetIncomeEvent()).Sum(ie => ie.UnitPrice * ie.UnitPitExchangeRate).Round2()
-                            - fib.AllUnitsClosedInYear.Select(au => au.GetCostEvent()).Sum(ce => ce.UnitPrice * ce.UnitPitExchangeRate).Round2(),
-                        FeesSum = fib.AllUnitsClosedInYear.Select(au => au.GetIncomeEvent()).Sum(ie => ie.Fee * ie.FeePitExchangeRate).Round2()
-                            + fib.AllUnitsClosedInYear.Select(au => au.GetCostEvent()).Sum(ce => ce.Fee * ce.FeePitExchangeRate).Round2(),
+                        TransactionProfitExcludingFees = fib.AllUnitsClosedInYear.Sum(au => au.GetProfit() + au.GetFeesCost()),
+                        TransactionProfitIncludingFees = fib.AllUnitsClosedInYear.Sum(au => au.GetProfit()),
+                        FeesSum = fib.AllUnitsClosedInYear.Sum(au => au.GetFeesCost()),
                         FinancialInstrumentCommonName = fib.FinancialInstrumentCommonName,
                         FinancialInstrumentReference = fib.FinancialInstrumentReference
                     })
