@@ -4,6 +4,8 @@
     {
         Poland,
         Singapore,
+        Italy,
+        GreatBritain,
         Switzerland,
         Germany,
         UnitedStatesOfAmerica
