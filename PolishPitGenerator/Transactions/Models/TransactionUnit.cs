@@ -13,21 +13,20 @@ namespace PolishPitGenerator.Transactions.Models
 
         public TransactionEvent GetCostEvent() => TransactionType == TransactionType.BUY ? OpenEvent : CloseEvent;
 
-        public decimal GetProfit() => (GetIncome() - GetTotalCost()).Round2();
+        public decimal GetProfit() => (GetIncome() - GetTotalCost());
 
         public decimal GetIncome()
         {
             var incomeEvent = GetIncomeEvent();
-            return (incomeEvent.UnitPrice * incomeEvent.UnitPitExchangeRate).Round2();
+
+            return incomeEvent.UnitPrice * incomeEvent.UnitPitExchangeRate;
         }
 
         public decimal GetTotalCost()
         {
             var costEvent = GetCostEvent();
             
-            var totalCost = (costEvent.UnitPrice * costEvent.UnitPitExchangeRate).Round2() + GetFeesCost();
-
-            return totalCost.Round2();
+            return costEvent.UnitPrice * costEvent.UnitPitExchangeRate + GetFeesCost();
         }
 
         public decimal GetFeesCost()
@@ -35,10 +34,7 @@ namespace PolishPitGenerator.Transactions.Models
             var incomeEvent = GetIncomeEvent();
             var costEvent = GetCostEvent();
 
-            var cost = (incomeEvent.Fee * incomeEvent.FeePitExchangeRate).Round2()
-                       + (costEvent.Fee * costEvent.FeePitExchangeRate).Round2();
-
-            return cost.Round2();
+            return incomeEvent.Fee * incomeEvent.FeePitExchangeRate + costEvent.Fee * costEvent.FeePitExchangeRate;
         }
 
     }

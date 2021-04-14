@@ -49,8 +49,8 @@ namespace PolishPitGenerator
                 GenerationDateTime = DateTime.Now,
                 Pit38Report = new Pit38Report
                 {
-                    C22 = financialInstrumentBalances.Sum(fib => fib.AllUnitsClosedInYear.Sum(au => au.GetIncome())),
-                    C23 = financialInstrumentBalances.Sum(fib => fib.AllUnitsClosedInYear.Sum(au =>  au.GetTotalCost())),
+                    C22 = financialInstrumentBalances.Sum(fib => fib.AllUnitsClosedInYear.Sum(au => au.GetIncome())).Round2(),
+                    C23 = financialInstrumentBalances.Sum(fib => fib.AllUnitsClosedInYear.Sum(au =>  au.GetTotalCost())).Round2(),
                     G45 = dividends.Sum(d => d.PolishTaxAmount * d.PitExchangeRate).Round2(),
                     G46 = dividends.Sum(d => d.PaidTaxAmount * d.PitExchangeRate).Round2(),
                     G47 = dividends.Sum(d => d.PitTaxAmount * d.PitExchangeRate).Round2(),
