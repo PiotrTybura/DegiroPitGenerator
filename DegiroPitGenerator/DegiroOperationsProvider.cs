@@ -1,12 +1,10 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Threading.Tasks;
 using DegiroPitGenerator.Models.Configuration;
 using Integrations.Degiro;
 using Integrations.Degiro.Adapters;
 using Integrations.Degiro.Models;
 using Integrations.Degiro.Models.Configuration;
-using Microsoft.Extensions.Configuration;
 using Models.Operations;
 
 namespace DegiroPitGenerator
@@ -28,8 +26,6 @@ namespace DegiroPitGenerator
 
         internal async Task<YearOperations> GetYearOperations(int pitYear)
         {
-            var degiroIntegration = await new Integrations.Degiro.IntegrationFactory(_configuration).Create();
-
             var localCsvConfiguration = Configuration.GetSection<DegiroCsvOverride>();
 
             ICsv<CsvTransaction> transactionCsv;
@@ -42,6 +38,8 @@ namespace DegiroPitGenerator
             }
             else
             {
+                var degiroIntegration = await new Integrations.Degiro.IntegrationFactory(_configuration).Create();
+
                 transactionCsv = degiroIntegration.GetTransactions();
                 cashOperationCsv = degiroIntegration.GetCashOperations(pitYear);
             }
