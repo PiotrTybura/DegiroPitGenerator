@@ -75,13 +75,19 @@ namespace Integrations.Nbp
 
                 for(int i = 0; i < cells.Count - 3; i++)
                 {
+                    decimal? rate = null;
+
+                    //Ruble rate can't be determined
+                    if (cells[i] == "")
+                        rate = 0.0M;
+
                     yield return new ExchangeRate
                     {
                         Date = date,
                         BaseCurrency = Enum.Parse<Currency>(currencies[i].Name),
                         //The code was prepared for Degiro accounts denominated in EUR
                         CounterCurrency = Currency.PLN,
-                        Rate = decimal.Parse(cells[i], _cultureInfo) / currencies[i].Denominator
+                        Rate = rate ?? decimal.Parse(cells[i], _cultureInfo) / currencies[i].Denominator
                     };
                 }
             }
