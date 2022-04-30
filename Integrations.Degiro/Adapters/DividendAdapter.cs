@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using Extensions;
+using Integrations.Degiro.Comparers;
 using Integrations.Degiro.Models;
 using Integrations.Degiro.Models.Configuration;
 using Models;
@@ -18,11 +18,15 @@ namespace Integrations.Degiro.Adapters
     public class DividendAdapter : IDividendAdapter
     {
         private readonly DegiroConfiguration _configuration;
+        private readonly ISameDividendRowComparer _sameDividendRowComparer;
+
         private readonly CultureInfo _datesCultureInfo;
 
         public DividendAdapter(DegiroConfiguration configuration)
         {
             _configuration = configuration;
+            _sameDividendRowComparer = new SameDividendRowComparer();
+
             _datesCultureInfo = CultureInfo.GetCultureInfo(configuration.Domain.ReportsIsoLanguageCode);
         }
 
@@ -31,20 +35,27 @@ namespace Integrations.Degiro.Adapters
             var dividends = degiroCashOperations.Where(_ => _.Description == _configuration.Domain.Translations.Dividend);
             var dividendsTaxes = degiroCashOperations.Where(_ => _.Description == _configuration.Domain.Translations.DividendTax).ToList();
 
-            foreach (var dividendRow in dividends)
+            var dividendsInDay = dividends.GroupBy(_ => _, _sameDividendRowComparer);
+
+            foreach (var sameDividendRows in dividendsInDay)
             {
-                var dividendTax = dividendsTaxes.ZeroOrSingle(_ => TransactionEquals(_, dividendRow));
-                dividendsTaxes.Remove(dividendTax);
+                var dividend = sameDividendRows.Key;
+                var amount = sameDividendRows.Sum(_ => _.ChangeAmount.Value);
+
+                var sameDividendsTaxes = dividendsTaxes.Where(_ => _sameDividendRowComparer.Equals(_, sameDividendRows.Key)).ToList();
+                var dividendTax = -1 * sameDividendsTaxes.Sum(_ => _.ChangeAmount.Value);
+
+                dividendsTaxes = dividendsTaxes.Except(sameDividendsTaxes).ToList();
 
                 yield return new Dividend
                 {
-                    Amount = dividendRow.ChangeAmount.Value,
-                    Currency = ParseCurrency(dividendRow.ChangeCurrency),
-                    Date = DateTime.Parse(dividendRow.Date, _datesCultureInfo),
+                    Amount = amount,
+                    Currency = ParseCurrency(dividend.ChangeCurrency),
+                    Date = DateTime.Parse(dividend.Date, _datesCultureInfo),
                     //There are no stock names in cashOperation reports, so reference must base only on Isin
-                    FinancialInstrumentReference = dividendRow.Isin,
-                    FinancialInstrumentCommonName = dividendRow.Product,
-                    PaidTaxAmount = dividendTax != default ? Math.Abs(dividendTax.ChangeAmount.Value) : default
+                    FinancialInstrumentReference = dividend.Isin,
+                    FinancialInstrumentCommonName = dividend.Product,
+                    PaidTaxAmount = dividendTax
                 };
             }
 
@@ -58,12 +69,5 @@ namespace Integrations.Degiro.Adapters
 
             return isMapping ? Enum.Parse<Currency>(mappedCurrency) : Enum.Parse<Currency>(currency);
         }
-
-        private bool TransactionEquals(CsvCashOperation csvCashOperation1, CsvCashOperation csvCashOperation2) =>
-            csvCashOperation1.Isin == csvCashOperation2.Isin
-            && csvCashOperation1.Date == csvCashOperation2.Date
-            && csvCashOperation1.ExecutionDate == csvCashOperation2.ExecutionDate
-            && csvCashOperation1.ExecutionTime == csvCashOperation2.ExecutionTime
-            && csvCashOperation1.ChangeCurrency == csvCashOperation2.ChangeCurrency;
     }
 }
