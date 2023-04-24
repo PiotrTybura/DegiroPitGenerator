@@ -62,6 +62,8 @@ namespace PolishPitGenerator.Transactions
                 financialInstrumentBalance.AllUnitsClosedInYear =
                     financialInstrumentBalance.TransactionUnits.Where(_ => _.CloseEvent?.Date.Year == pitYear).ToList();
 
+            financialInstrumentBalances.RemoveAll(_ => _.AllUnitsClosedInYear.Count == 0);
+
             return financialInstrumentBalances;
         }
 
