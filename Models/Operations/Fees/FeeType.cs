@@ -2,8 +2,12 @@
 {
     public enum FeeType
     {
+        WithdrawCost,
         ForeignStockConnection,
         Interest,
-        ShortInterest
+        ShortInterest,
+        RolloverInterest,
+        CurrencyAutoConversion,
+        CurrencySpreads
     }
 }

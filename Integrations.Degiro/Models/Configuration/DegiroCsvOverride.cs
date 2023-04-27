@@ -1,4 +1,4 @@
-﻿namespace DegiroPitGenerator.Models.Configuration
+﻿namespace Integrations.Degiro.Models.Configuration
 {
     public class DegiroCsvOverride
     {

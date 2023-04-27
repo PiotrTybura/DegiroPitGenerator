@@ -13,12 +13,12 @@ namespace PolishPitGenerator
 
     internal class ExchangeRateSolver : IExchangeRateSolver
     {
-        private readonly IEnumerable<ExchangeRate> _exchangeRates;
+        private readonly IList<ExchangeRate> _exchangeRates;
 
         internal ExchangeRateSolver(IEnumerable<ExchangeRate> exchangeRates)
         {
             //Exchange Rates are ordered to find "previous working day" faster
-            _exchangeRates = exchangeRates.OrderByDescending(_ => _.Date);
+            _exchangeRates = exchangeRates.OrderByDescending(_ => _.Date).ToList();
         }
 
         public decimal GetNbpExchangeRate(Currency currency, DateTime date) =>

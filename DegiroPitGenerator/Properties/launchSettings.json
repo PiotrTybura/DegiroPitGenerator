@@ -2,7 +2,7 @@
   "profiles": {
     "DegiroPitGenerator": {
       "commandName": "Project",
-      "commandLineArgs": "2020"
+      "commandLineArgs": "2022"
     }
   }
 }

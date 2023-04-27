@@ -12,10 +12,10 @@ namespace DegiroPitGenerator
         {
             var pitYear = int.Parse(args[0]);
 
-            var degiroOperationsProivder = new DegiroOperationsProvider();
+            var operationsProivder = new ExanteOperationsProvider();//DegiroOperationsProvider(Configuration.GetSection<DegiroConfiguration>());
             var nbpExchangeRatesProvider = new NbpExchangeRatesProvider();
 
-            var yearOperations = await degiroOperationsProivder.GetYearOperations(pitYear);
+            var yearOperations = await operationsProivder.GetYearOperations(pitYear);
 
             var exchangeRates = await nbpExchangeRatesProvider.GetExchangeRates();
 

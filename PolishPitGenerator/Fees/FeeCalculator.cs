@@ -30,7 +30,7 @@ namespace PolishPitGenerator.Fees
                     new PitFee(fee)
                     {
                         PitExchangeRate = _exchangeRateSolver.GetNbpExchangeRate(fee.Currency, fee.Date),
-                    }); ; ;
+                    });
             }
 
             return pitFees;

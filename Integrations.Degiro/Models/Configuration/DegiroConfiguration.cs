@@ -6,5 +6,6 @@
         public LoginConfiguration Login { get; set; }
         public RequestsConfiguration Requests { get; set; }
         public Domain Domain { get; set; }
+        public DegiroCsvOverride DegiroCsvOverride { get; set; }
     }
 }

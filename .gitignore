@@ -40,3 +40,5 @@ msbuild.wrn
 .vs/
 
 _ReSharper.Caches*
+
+*/Properties/PublishProfiles

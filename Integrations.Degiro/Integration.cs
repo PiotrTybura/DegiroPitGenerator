@@ -2,6 +2,7 @@
 using System.Text;
 using Integrations.Degiro.Models;
 using Integrations.Degiro.Models.Configuration;
+using Integrations.Interfaces;
 using Newtonsoft.Json.Linq;
 using RestSharp;
 

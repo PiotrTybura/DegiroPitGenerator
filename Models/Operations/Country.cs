@@ -9,6 +9,7 @@
         Switzerland,
         Germany,
         UnitedStatesOfAmerica,
-        Netherlands
+        Netherlands,
+        Cyprus
     }
 }

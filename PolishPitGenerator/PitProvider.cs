@@ -43,7 +43,7 @@ namespace PolishPitGenerator
 
         private Report GenerateReport(List<FinancialInstrumentBalance> financialInstrumentBalances, List<PitDividend> dividends, List<PitFee> fees)
         {
-            return new Report
+             return new Report
             {
                 GeneratorVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString(),
                 GenerationDateTime = DateTime.Now,
